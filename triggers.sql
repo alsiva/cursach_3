@@ -7,7 +7,7 @@ declare
     new_rating_sum   int;
     new_rating_count int;
 begin
-    if new is not null then
+    if (tg_op = 'INSERT' or tg_op = 'UPDATE') then
         select sum(rating) into new_rating_sum from eventrating where person_id = new.person_id;
         select count(rating) into new_rating_count from eventrating where person_id = new.person_id;
 
@@ -43,23 +43,54 @@ CREATE TRIGGER tr_insupd_overall_rating
 EXECUTE PROCEDURE insupd_overall_rating();
 
 
-CREATE OR REPLACE FUNCTION change_event_rating()
+
+CREATE OR REPLACE FUNCTION house_capacity()
     returns trigger
     language plpgsql
 as
 $$
+declare
+    people_count   int;
+    house_capacity int;
 begin
-    if not (0 <= new.rating and new.rating <= 100) then
-        raise EXCEPTION 'Рейтинг должен лежать в диапазоне [0; 100]';
+    select maxpeople into house_capacity from house where new.house_id = house.id;
+
+    select count(*)
+    into people_count
+    from settlement
+    where new.house_id = settlement.house_id
+      and new.trip_id = settlement.trip_id;
+
+
+    if (house_capacity <= people_count and tg_op = 'INSERT') then
+        raise exception 'Все места в доме заняты';
     end if;
     return new;
 end;
 $$;
 
-DROP TRIGGER IF EXISTS change_event_rating ON eventrating;
-CREATE TRIGGER change_event_rating
-    BEFORE INSERT or UPDATE
-    ON eventrating
+DROP TRIGGER IF EXISTS tr_house_capacity ON settlement;
+CREATE TRIGGER tr_house_capacity
+    BEFORE INSERT
+    ON settlement
     FOR EACH ROW
-EXECUTE PROCEDURE change_event_rating();
+EXECUTE PROCEDURE house_capacity();
 
+
+
+CREATE OR REPLACE FUNCTION main_org()
+    returns trigger
+    language plpgsql
+as
+$$
+begin
+    INSERT INTO tripsorganizer(trip_id, person_id) VALUES (new.id, new.main_organizer_id);
+end;
+$$;
+
+DROP TRIGGER IF EXISTS tr_main_org ON trip;
+CREATE TRIGGER tr_main_org
+    AFTER INSERT
+    ON trip
+    FOR EACH ROW
+EXECUTE PROCEDURE main_org();
