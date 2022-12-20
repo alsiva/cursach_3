@@ -42,6 +42,12 @@ CREATE TRIGGER tr_insupd_overall_rating
     FOR EACH ROW
 EXECUTE PROCEDURE insupd_overall_rating();
 
+insert into eventrating(person_id, trip_id, rating)
+values (1, 3, 60);
+
+delete from eventrating where person_id = 1 and trip_id = 3;
+
+update eventrating set rating = 90 where person_id = 1 and trip_id = 1;
 
 
 CREATE OR REPLACE FUNCTION house_capacity()
@@ -55,6 +61,8 @@ declare
 begin
     select maxpeople into house_capacity from house where new.house_id = house.id;
 
+    raise notice 'New = %', new;
+
     select count(*)
     into people_count
     from settlement
@@ -62,7 +70,7 @@ begin
       and new.trip_id = settlement.trip_id;
 
 
-    if (house_capacity <= people_count and tg_op = 'INSERT') then
+    if (house_capacity <= people_count) then
         raise exception 'Все места в доме заняты';
     end if;
     return new;
@@ -71,26 +79,44 @@ $$;
 
 DROP TRIGGER IF EXISTS tr_house_capacity ON settlement;
 CREATE TRIGGER tr_house_capacity
-    BEFORE INSERT
+    BEFORE INSERT OR UPDATE
     ON settlement
     FOR EACH ROW
 EXECUTE PROCEDURE house_capacity();
 
+insert into trip(name, description, start_date, finish_date, main_organizer_id)
+values('Ya.Relax', 'GOAT', '2023-07-01', '2023-07-15', 3);
 
-
-CREATE OR REPLACE FUNCTION main_org()
+CREATE OR REPLACE FUNCTION disapprove_person()
     returns trigger
     language plpgsql
 as
 $$
 begin
-    INSERT INTO tripsorganizer(trip_id, person_id) VALUES (new.id, new.main_organizer_id);
+    if (tg_op = 'UPDATE' and new.approved = false) then
+        delete
+        from settlement
+        where settlement.person_id = new.person_id
+          and settlement.trip_id = new.trip_id;
+    elsif (tg_op = 'DELETE') then
+        delete
+        from settlement
+        where settlement.person_id = old.person_id
+          and settlement.trip_id = old.trip_id;
+    end if;
+    return new;
 end;
 $$;
 
-DROP TRIGGER IF EXISTS tr_main_org ON trip;
-CREATE TRIGGER tr_main_org
-    AFTER INSERT
-    ON trip
+DROP TRIGGER IF EXISTS tr_disapprove_person ON tripsparticipants;
+CREATE TRIGGER tr_disapprove_person
+    AFTER UPDATE or DELETE
+    ON tripsparticipants
     FOR EACH ROW
-EXECUTE PROCEDURE main_org();
+EXECUTE PROCEDURE disapprove_person();
+
+update tripsparticipants set approved = false
+where trip_id = 2 and person_id=3;
+
+delete from tripsparticipants
+where trip_id = 2 and person_id = 3;

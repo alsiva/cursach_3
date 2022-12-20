@@ -1,13 +1,10 @@
+CREATE TYPE gender AS ENUM ('man','woman');
+
 CREATE TABLE IF NOT EXISTS Rights(
   id SERIAL UNIQUE,
   name VARCHAR(50) UNIQUE,
   PRIMARY KEY(id,name)
 );
-
-
-DROP TYPE IF EXISTS gender CASCADE;
-CREATE TYPE gender AS ENUM ('man','woman');
-
 
 CREATE TABLE IF NOT EXISTS BerryPeople(
   id Serial PRIMARY KEY,

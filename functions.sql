@@ -22,7 +22,8 @@ begin
 end;
 $$;
 
-select get_sorted_requests(1);
+select *
+from get_sorted_requests(3);
 
 create or replace function get_settlement(
     trip_id_arg integer
@@ -47,7 +48,8 @@ begin
 end;
 $$;
 
-select get_settlement(1);
+select *
+from get_settlement(3);
 
 
 
@@ -68,10 +70,13 @@ begin
     return query (select tripsparticipants.trip_id, tripsparticipants.person_id, name, surname
                   from tripsparticipants
                            inner join berrypeople on tripsparticipants.person_id = berrypeople.id
-                           left join eventrating on tripsparticipants.person_id = eventrating.person_id and
-                                                    trip_id_arg = eventrating.trip_id
-                  where eventrating.person_id IS NULL);
+                           left join eventrating on
+                              tripsparticipants.person_id = eventrating.person_id
+                          and tripsparticipants.trip_id = eventrating.trip_id
+                  where eventrating.rating is null
+                    and tripsparticipants.trip_id = trip_id_arg);
 end;
 $$;
 
-select get_unrated(1)
+select *
+from get_unrated(1);
