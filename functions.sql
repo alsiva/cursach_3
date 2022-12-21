@@ -22,9 +22,6 @@ begin
 end;
 $$;
 
-select *
-from get_sorted_requests(3);
-
 create or replace function get_settlement(
     trip_id_arg integer
 )
@@ -47,10 +44,6 @@ begin
                   where settlement.trip_id = trip_id_arg);
 end;
 $$;
-
-select *
-from get_settlement(3);
-
 
 
 create or replace function get_unrated(
@@ -77,6 +70,3 @@ begin
                     and tripsparticipants.trip_id = trip_id_arg);
 end;
 $$;
-
-select *
-from get_unrated(1);
