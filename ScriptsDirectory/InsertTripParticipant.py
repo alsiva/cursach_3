@@ -6,13 +6,13 @@ from faker import Faker
 fake = Faker('ru_RU')
 try:
     conn = psycopg2.connect(user='postgres',
-                            password='Gungun124',
-                            host='127.0.0.1',
-                            port='8888',
-                            database='yagodnoye')
+                            password='5635',
+                            host='localhost',
+                            port='5433',
+                            database='postgres')
 
     cursor = conn.cursor()
-    postgres_create_berry_people_query = """ INSERT INTO tripparticipant (trip_id, person_id, letter, approved) VALUES (%s,%s, %s, %s)"""
+    postgres_create_berry_people_query = """ INSERT INTO tripsparticipants (trip_id, person_id, letter, approved) VALUES (%s,%s, %s, %s)"""
     for i in range(36):
         for j in range(100):
             approved = np.random.choice([True,False],p=(0.5,0.5))

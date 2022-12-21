@@ -42,12 +42,6 @@ CREATE TRIGGER tr_insupd_overall_rating
     FOR EACH ROW
 EXECUTE PROCEDURE insupd_overall_rating();
 
-insert into eventrating(person_id, trip_id, rating)
-values (1, 3, 60);
-
-delete from eventrating where person_id = 1 and trip_id = 3;
-
-update eventrating set rating = 90 where person_id = 1 and trip_id = 1;
 
 
 CREATE OR REPLACE FUNCTION house_capacity()
@@ -84,8 +78,6 @@ CREATE TRIGGER tr_house_capacity
     FOR EACH ROW
 EXECUTE PROCEDURE house_capacity();
 
-insert into trip(name, description, start_date, finish_date, main_organizer_id)
-values('Ya.Relax', 'GOAT', '2023-07-01', '2023-07-15', 3);
 
 CREATE OR REPLACE FUNCTION disapprove_person()
     returns trigger
@@ -115,8 +107,4 @@ CREATE TRIGGER tr_disapprove_person
     FOR EACH ROW
 EXECUTE PROCEDURE disapprove_person();
 
-update tripsparticipants set approved = false
-where trip_id = 2 and person_id=3;
 
-delete from tripsparticipants
-where trip_id = 2 and person_id = 3;

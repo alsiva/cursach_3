@@ -8,10 +8,10 @@ import sys
 fake = Faker('ru_RU')
 try:
     conn = psycopg2.connect(user='postgres',
-                            password='Gungun124',
-                            host='127.0.0.1',
-                            port='8888',
-                            database='yagodnoye')
+                            password='5635',
+                            host='localhost',
+                            port='5433',
+                            database='postgres')
 
     cursor = conn.cursor()
     cursor2 = conn.cursor()
